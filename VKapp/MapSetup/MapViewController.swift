@@ -16,7 +16,7 @@ class MapViewController: UIViewController {
     
     private let addPinButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("📍 Точка", for: .normal)
+        button.setTitle("map_add_pin".localized, for: .normal)
         button.backgroundColor = .systemBlue
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 13, weight: .medium)
@@ -27,7 +27,7 @@ class MapViewController: UIViewController {
     
     private let routeButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("🗺️ Маршрут", for: .normal)
+        button.setTitle("map_route".localized, for: .normal)
         button.backgroundColor = .systemGreen
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 13, weight: .medium)
@@ -40,7 +40,7 @@ class MapViewController: UIViewController {
     
     private let clearButton: UIButton = {
         let button = UIButton(type: .system)
-        button.setTitle("🗑️ Очистить", for: .normal)
+        button.setTitle("map_clear".localized, for: .normal)
         button.backgroundColor = .systemRed
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 13, weight: .medium)
@@ -51,7 +51,7 @@ class MapViewController: UIViewController {
     
     private let infoLabel: UILabel = {
         let label = UILabel()
-        label.text = "Нажмите на карту, чтобы добавить точку"
+        label.text = "map_add_pin_hint".localized
         label.textAlignment = .center
         label.numberOfLines = 0
         label.font = UIFont.systemFont(ofSize: 13)
@@ -76,12 +76,37 @@ class MapViewController: UIViewController {
         setupMapView()
         setupLocationManager()
         setupGestures()
+        updateLocalization()
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(updateLocalization),
+            name: Notification.Name("LanguageChanged"),
+            object: nil
+        )
+        let languageButton = UIBarButtonItem(
+            image: UIImage(systemName: "globe"),
+            style: .plain,
+            target: self,
+            action: #selector(showLanguageSelector)
+        )
+        navigationItem.rightBarButtonItem = languageButton
+    }
+
+    @objc private func showLanguageSelector() {
+        let languageVC = LanguageSelectionViewController()
+        let navController = UINavigationController(rootViewController: languageVC)
+        present(navController, animated: true)
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
     
     // MARK: - Setup
     private func setupUI() {
         view.backgroundColor = .systemBackground
-        title = "Карта"
+        updateLocalization()
         
         view.addSubview(mapView)
         view.addSubview(addPinButton)
@@ -95,7 +120,6 @@ class MapViewController: UIViewController {
             mapView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             mapView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             
-            // Уменьшенные кнопки
             addPinButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
             addPinButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             addPinButton.widthAnchor.constraint(equalToConstant: 90),
@@ -117,7 +141,6 @@ class MapViewController: UIViewController {
             infoLabel.heightAnchor.constraint(greaterThanOrEqualToConstant: 36)
         ])
         
-        // Actions
         addPinButton.addTarget(self, action: #selector(addPinButtonTapped), for: .touchUpInside)
         routeButton.addTarget(self, action: #selector(routeButtonTapped), for: .touchUpInside)
         clearButton.addTarget(self, action: #selector(clearButtonTapped), for: .touchUpInside)
@@ -126,7 +149,6 @@ class MapViewController: UIViewController {
     private func setupMapView() {
         mapView.delegate = self
         
-        // Настройка внешнего вида карты
         mapView.mapType = .standard
         mapView.showsUserLocation = true
         mapView.showsCompass = true
@@ -150,6 +172,15 @@ class MapViewController: UIViewController {
         mapView.addGestureRecognizer(longPressGesture)
     }
     
+    // MARK: - Localization
+    @objc private func updateLocalization() {
+        title = "map_title".localized
+        addPinButton.setTitle("map_add_pin".localized, for: .normal)
+        routeButton.setTitle("map_route".localized, for: .normal)
+        clearButton.setTitle("map_clear".localized, for: .normal)
+        infoLabel.text = "map_add_pin_hint".localized
+    }
+    
     // MARK: - Actions
     @objc private func addPinButtonTapped() {
         if let userLocation = userLocation {
@@ -165,7 +196,7 @@ class MapViewController: UIViewController {
     @objc private func routeButtonTapped() {
         guard let selectedPin = selectedPin,
               let userLocation = userLocation else {
-            showAlert(message: "Сначала добавьте точку на карте")
+            showAlert(message: "map_no_pin".localized)
             return
         }
         
@@ -184,7 +215,7 @@ class MapViewController: UIViewController {
         selectedPin = nil
         routeButton.isEnabled = false
         routeButton.alpha = 0.5
-        infoLabel.text = "Нажмите на карту, чтобы добавить точку"
+        infoLabel.text = "map_add_pin_hint".localized
     }
     
     @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
@@ -203,17 +234,19 @@ class MapViewController: UIViewController {
         
         let pin = MKPointAnnotation()
         pin.coordinate = coordinate
-        pin.title = "📍 Выбранная точка"
+        pin.title = "📍 " + "map_pin_added".localized(with: "")
         
         let geocoder = CLGeocoder()
         let location = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
         geocoder.reverseGeocodeLocation(location) { [weak self] placemarks, error in
+            var address = "Unknown address"
             if let placemark = placemarks?.first {
-                pin.subtitle = placemark.name ?? placemark.locality ?? "Неизвестный адрес"
+                address = placemark.name ?? placemark.locality ?? "Unknown address"
             } else {
-                pin.subtitle = "Широта: \(coordinate.latitude), Долгота: \(coordinate.longitude)"
+                address = "Lat: \(coordinate.latitude), Lon: \(coordinate.longitude)"
             }
-            self?.infoLabel.text = "📍 \(pin.subtitle ?? "")"
+            pin.subtitle = address
+            self?.infoLabel.text = "map_pin_added".localized(with: address)
         }
         
         mapView.addAnnotation(pin)
@@ -244,39 +277,41 @@ class MapViewController: UIViewController {
         request.transportType = .automobile
         request.requestsAlternateRoutes = false
         
+        infoLabel.text = "map_route_building".localized
+        
         let directions = MKDirections(request: request)
         directions.calculate { [weak self] response, error in
             guard let self = self else { return }
             
-            if let error = error {
-                self.showAlert(message: "Ошибка построения маршрута: \(error.localizedDescription)")
-                return
+            DispatchQueue.main.async {
+                if let error = error {
+                    self.showAlert(message: "map_route_error".localized + ": \(error.localizedDescription)")
+                    return
+                }
+                
+                guard let route = response?.routes.first else {
+                    self.showAlert(message: "map_route_not_found".localized)
+                    return
+                }
+                
+                self.currentRoute = route.polyline
+                self.mapView.addOverlay(route.polyline)
+                
+                let distance = route.distance / 1000
+                let time = route.expectedTravelTime / 60
+                
+                self.infoLabel.text = "map_route_ready".localized(with: distance, Int(time))
+                
+                let rect = route.polyline.boundingMapRect
+                self.mapView.setVisibleMapRect(rect, edgePadding: UIEdgeInsets(top: 50, left: 50, bottom: 50, right: 50), animated: true)
             }
-            
-            guard let route = response?.routes.first else {
-                self.showAlert(message: "Маршрут не найден")
-                return
-            }
-            
-            self.currentRoute = route.polyline
-            self.mapView.addOverlay(route.polyline)
-            
-            let distance = route.distance / 1000
-            let time = route.expectedTravelTime / 60
-            
-            self.infoLabel.text = """
-            🗺️ Маршрут: \(String(format: "%.1f", distance)) км, \(Int(time)) мин
-            """
-            
-            let rect = route.polyline.boundingMapRect
-            self.mapView.setVisibleMapRect(rect, edgePadding: UIEdgeInsets(top: 50, left: 50, bottom: 50, right: 50), animated: true)
         }
     }
     
     // MARK: - Helpers
     private func showAlert(message: String) {
-        let alert = UIAlertController(title: "Информация", message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        let alert = UIAlertController(title: "info".localized, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "ok".localized, style: .default))
         present(alert, animated: true)
     }
 }
@@ -342,7 +377,7 @@ extension MapViewController: CLLocationManagerDelegate {
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print("Ошибка получения местоположения: \(error.localizedDescription)")
+        print("Location error: \(error.localizedDescription)")
     }
     
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
@@ -351,7 +386,7 @@ extension MapViewController: CLLocationManagerDelegate {
             locationManager.startUpdatingLocation()
             mapView.showsUserLocation = true
         case .denied, .restricted:
-            showAlert(message: "Разрешите доступ к геолокации в настройках")
+            showAlert(message: "map_allow_location".localized)
         case .notDetermined:
             locationManager.requestWhenInUseAuthorization()
         @unknown default:

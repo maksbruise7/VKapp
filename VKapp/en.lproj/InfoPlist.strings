@@ -1,0 +1,3 @@
+/* Location permissions */
+"NSLocationWhenInUseUsageDescription" = "App needs access to your location to build routes on the map";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "App needs access to your location to build routes on the map";
