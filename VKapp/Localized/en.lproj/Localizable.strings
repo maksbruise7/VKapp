@@ -1,0 +1,62 @@
+/* ========== GENERAL ========== */
+"app_name" = "VKapp";
+"ok" = "OK";
+"cancel" = "Cancel";
+"delete" = "Delete";
+"error" = "Error";
+"success" = "Success";
+"language changed" = "Язык изменён! Перезапустите приложение";
+"info" = "Info";
+"loading" = "Loading...";
+"no_data" = "No data available";
+
+/* ========== TAB BAR ========== */
+"tab_feed" = "Feed";
+"tab_saved" = "Saved";
+"tab_map" = "Map";
+
+/* ========== FEED SCREEN ========== */
+"feed_title" = "Feed";
+"feed_empty" = "No posts yet";
+"feed_likes" = "❤️ %d";
+"feed_views" = "👁️ %d";
+"feed_author" = "Author";
+"feed_date" = "Date";
+
+/* ========== SAVED POSTS SCREEN ========== */
+"saved_title" = "Saved Posts";
+"saved_empty" = "No saved posts";
+"saved_delete_confirmation" = "Delete post?";
+"saved_deleted" = "Post deleted";
+
+/* ========== MAP SCREEN ========== */
+"map_title" = "Map";
+"map_add_pin" = "📍 Pin";
+"map_route" = "🗺️ Route";
+"map_clear" = "🗑️ Clear";
+"map_add_pin_hint" = "Long press on map to add a pin";
+"map_pin_added" = "📍 Pin added: %@";
+"map_no_pin" = "Add a pin on the map first";
+"map_route_building" = "Building route...";
+"map_route_ready" = "🗺️ Route: %.1f km, %d min";
+"map_route_error" = "Route building error";
+"map_route_not_found" = "Route not found";
+"map_location_error" = "Location error";
+"map_allow_location" = "Allow location access in Settings";
+
+/* ========== ALERTS ========== */
+"alert_post_saved" = "Post saved!";
+"alert_post_already_saved" = "This post is already saved";
+"alert_save_error" = "Failed to save post";
+"alert_delete_error" = "Failed to delete post";
+
+/* ========== CORE DATA ========== */
+"coredata_save_success" = "Post saved successfully";
+"coredata_save_error" = "Failed to save post";
+"coredata_fetch_error" = "Failed to load posts";
+"coredata_delete_success" = "Post deleted";
+
+/* ========== PERMISSIONS ========== */
+"permission_location_title" = "Location Access";
+"permission_location_message" = "App needs access to your location to build routes";
+"permission_location_settings" = "Go to Settings";

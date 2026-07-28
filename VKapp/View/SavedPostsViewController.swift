@@ -3,30 +3,30 @@ import UIKit
 class SavedPostsViewController: UIViewController {
     
     private var savedPosts: [SavedPost] = []
-    
-    private let tableView: UITableView = {
-        let tableView = UITableView()
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.register(PostTableViewCell.self, forCellReuseIdentifier: "SavedPostCell")
-        return tableView
-    }()
-    
-    private let emptyLabel: UILabel = {
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.text = "Нет сохранённых постов"
-        label.textAlignment = .center
-        label.textColor = .gray
-        label.isHidden = true
-        return label
-    }()
+    private let tableView = UITableView()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        setupTableView()
         loadSavedPosts()
+        updateLocalization()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(updateLocalization), name: Notification.Name("LanguageChanged"), object: nil)
+        let languageButton = UIBarButtonItem(
+                image: UIImage(systemName: "globe"),
+                style: .plain,
+                target: self,
+                action: #selector(showLanguageSelector)
+            )
+            navigationItem.rightBarButtonItem = languageButton
+        }
+
+        @objc private func showLanguageSelector() {
+            let languageVC = LanguageSelectionViewController()
+            let navController = UINavigationController(rootViewController: languageVC)
+            present(navController, animated: true)
     }
+
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -35,41 +35,31 @@ class SavedPostsViewController: UIViewController {
     
     private func setupUI() {
         view.backgroundColor = .systemBackground
-        title = "Сохранённые посты"
+        updateLocalization()
         
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.register(PostTableViewCell.self, forCellReuseIdentifier: "SavedPostCell")
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.estimatedRowHeight = 400
         view.addSubview(tableView)
-        view.addSubview(emptyLabel)
         
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            
-            emptyLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            emptyLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
     
-    private func setupTableView() {
-        tableView.delegate = self
-        tableView.dataSource = self
+    @objc private func updateLocalization() {
+        title = "saved_title".localized
     }
     
     private func loadSavedPosts() {
         savedPosts = CoreDataManager.shared.fetchSavedPosts()
-        updateUI()
-    }
-    
-    private func updateUI() {
-        if savedPosts.isEmpty {
-            tableView.isHidden = true
-            emptyLabel.isHidden = false
-        } else {
-            tableView.isHidden = false
-            emptyLabel.isHidden = true
-            tableView.reloadData()
-        }
+        tableView.reloadData()
     }
 }
 
@@ -84,7 +74,6 @@ extension SavedPostsViewController: UITableViewDelegate, UITableViewDataSource {
         }
         
         let savedPost = savedPosts[indexPath.row]
-        // Конвертируем SavedPost в Post для отображения
         let post = Post(
             id: Int(savedPost.id),
             author: savedPost.author ?? "",
@@ -96,14 +85,6 @@ extension SavedPostsViewController: UITableViewDelegate, UITableViewDataSource {
         )
         cell.configure(with: post)
         return cell
-    }
-    
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return UITableView.automaticDimension
-    }
-    
-    func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 400
     }
     
     func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {

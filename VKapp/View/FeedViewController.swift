@@ -11,11 +11,39 @@ class FeedViewController: UIViewController {
         setupTableView()
         loadPosts()
         setupDoubleTapGesture()
+        updateLocalization()
+        
+        // Подписка на изменение языка
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(updateLocalization),
+            name: Notification.Name("LanguageChanged"),
+            object: nil
+        )
+        let languageButton = UIBarButtonItem(
+            image: UIImage(systemName: "globe"),
+            style: .plain,
+            target: self,
+            action: #selector(showLanguageSelector)
+        )
+        navigationItem.rightBarButtonItem = languageButton
+    }
+
+    @objc private func showLanguageSelector() {
+        let languageVC = LanguageSelectionViewController()
+        let navController = UINavigationController(rootViewController: languageVC)
+        present(navController, animated: true)
+    }
+
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
     
+    // MARK: - Setup
     private func setupUI() {
         view.backgroundColor = .systemBackground
-        title = "Лента"
+        updateLocalization()
         
         tableView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(tableView)
@@ -37,7 +65,6 @@ class FeedViewController: UIViewController {
     }
     
     private func loadPosts() {
-        // Загрузка тестовых постов
         posts = [
             Post(id: 1, author: "Алексей", date: Date(), descriptionText: "Первый пост! Сегодня отличная погода!", imageURL: "", likes: 10, views: 100),
             Post(id: 2, author: "Мария", date: Date(), descriptionText: "Второй пост. Изучаю SwiftUI и CoreData", imageURL: "", likes: 25, views: 200),
@@ -52,35 +79,42 @@ class FeedViewController: UIViewController {
         tableView.addGestureRecognizer(doubleTapGesture)
     }
     
+    // MARK: - Localization
+    @objc private func updateLocalization() {
+        title = "feed_title".localized
+    }
+    
+    // MARK: - Actions
     @objc private func handleDoubleTap(_ gesture: UITapGestureRecognizer) {
         let location = gesture.location(in: tableView)
         guard let indexPath = tableView.indexPathForRow(at: location) else { return }
         
         let post = posts[indexPath.row]
         
-        // Проверяем, сохранён ли уже пост
         if CoreDataManager.shared.isPostSaved(postId: post.id) {
-            showAlert(title: "Информация", message: "Этот пост уже сохранён")
+            showAlert(title: "info".localized, message: "alert_post_already_saved".localized)
             return
         }
         
-        // Сохраняем пост
         CoreDataManager.shared.savePost(post: post) { [weak self] success in
-            if success {
-                self?.showAlert(title: "Успех", message: "Пост сохранён!")
-            } else {
-                self?.showAlert(title: "Ошибка", message: "Не удалось сохранить пост")
+            DispatchQueue.main.async {
+                if success {
+                    self?.showAlert(title: "success".localized, message: "alert_post_saved".localized)
+                } else {
+                    self?.showAlert(title: "error".localized, message: "alert_save_error".localized)
+                }
             }
         }
     }
     
     private func showAlert(title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        alert.addAction(UIAlertAction(title: "ok".localized, style: .default))
         present(alert, animated: true)
     }
 }
 
+// MARK: - UITableViewDelegate, UITableViewDataSource
 extension FeedViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return posts.count

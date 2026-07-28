@@ -19,10 +19,5 @@
             </array>
         </dict>
     </dict>
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>Приложению нужен доступ к вашему местоположению для построения маршрута на карте</string>
-    
-    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-    <string>Приложению нужен доступ к вашему местоположению для построения маршрута на карте</string>
 </dict>
 </plist>
