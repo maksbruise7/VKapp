@@ -17,7 +17,7 @@ class MapViewController: UIViewController {
     private let addPinButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("map_add_pin".localized, for: .normal)
-        button.backgroundColor = .systemBlue
+        button.backgroundColor = .appBlue
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 13, weight: .medium)
         button.layer.cornerRadius = 8
@@ -28,7 +28,7 @@ class MapViewController: UIViewController {
     private let routeButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("map_route".localized, for: .normal)
-        button.backgroundColor = .systemGreen
+        button.backgroundColor = .appGreen
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 13, weight: .medium)
         button.layer.cornerRadius = 8
@@ -41,7 +41,7 @@ class MapViewController: UIViewController {
     private let clearButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("map_clear".localized, for: .normal)
-        button.backgroundColor = .systemRed
+        button.backgroundColor = .appRed
         button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 13, weight: .medium)
         button.layer.cornerRadius = 8
@@ -55,8 +55,8 @@ class MapViewController: UIViewController {
         label.textAlignment = .center
         label.numberOfLines = 0
         label.font = UIFont.systemFont(ofSize: 13)
-        label.textColor = .darkGray
-        label.backgroundColor = .white.withAlphaComponent(0.9)
+        label.textColor = .appTextSecondary
+        label.backgroundColor = .appMapInfoBackground
         label.layer.cornerRadius = 8
         label.clipsToBounds = true
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -74,7 +74,7 @@ class MapViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         setupMapView()
-        setupLocationManager()
+        setupLocationManager()  // ✅ Теперь этот метод существует
         setupGestures()
         updateLocalization()
         
@@ -84,19 +84,6 @@ class MapViewController: UIViewController {
             name: Notification.Name("LanguageChanged"),
             object: nil
         )
-        let languageButton = UIBarButtonItem(
-            image: UIImage(systemName: "globe"),
-            style: .plain,
-            target: self,
-            action: #selector(showLanguageSelector)
-        )
-        navigationItem.rightBarButtonItem = languageButton
-    }
-
-    @objc private func showLanguageSelector() {
-        let languageVC = LanguageSelectionViewController()
-        let navController = UINavigationController(rootViewController: languageVC)
-        present(navController, animated: true)
     }
     
     deinit {
@@ -105,7 +92,7 @@ class MapViewController: UIViewController {
     
     // MARK: - Setup
     private func setupUI() {
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .appMapBackground
         updateLocalization()
         
         view.addSubview(mapView)
@@ -148,7 +135,6 @@ class MapViewController: UIViewController {
     
     private func setupMapView() {
         mapView.delegate = self
-        
         mapView.mapType = .standard
         mapView.showsUserLocation = true
         mapView.showsCompass = true
@@ -157,8 +143,15 @@ class MapViewController: UIViewController {
         mapView.isRotateEnabled = true
         mapView.isPitchEnabled = true
         mapView.pointOfInterestFilter = .includingAll
+        
+        if #available(iOS 13.0, *) {
+            if traitCollection.userInterfaceStyle == .dark {
+                mapView.overrideUserInterfaceStyle = .dark
+            }
+        }
     }
     
+    // ✅ ДОБАВЛЯЕМ МЕТОД setupLocationManager()
     private func setupLocationManager() {
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
@@ -393,4 +386,5 @@ extension MapViewController: CLLocationManagerDelegate {
             break
         }
     }
+    
 }

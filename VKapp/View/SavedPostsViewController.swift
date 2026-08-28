@@ -12,20 +12,7 @@ class SavedPostsViewController: UIViewController {
         updateLocalization()
         
         NotificationCenter.default.addObserver(self, selector: #selector(updateLocalization), name: Notification.Name("LanguageChanged"), object: nil)
-        let languageButton = UIBarButtonItem(
-                image: UIImage(systemName: "globe"),
-                style: .plain,
-                target: self,
-                action: #selector(showLanguageSelector)
-            )
-            navigationItem.rightBarButtonItem = languageButton
         }
-
-        @objc private func showLanguageSelector() {
-            let languageVC = LanguageSelectionViewController()
-            let navController = UINavigationController(rootViewController: languageVC)
-            present(navController, animated: true)
-    }
 
     
     override func viewWillAppear(_ animated: Bool) {

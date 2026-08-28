@@ -13,36 +13,20 @@ class FeedViewController: UIViewController {
         setupDoubleTapGesture()
         updateLocalization()
         
-        // Подписка на изменение языка
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(updateLocalization),
             name: Notification.Name("LanguageChanged"),
             object: nil
         )
-        let languageButton = UIBarButtonItem(
-            image: UIImage(systemName: "globe"),
-            style: .plain,
-            target: self,
-            action: #selector(showLanguageSelector)
-        )
-        navigationItem.rightBarButtonItem = languageButton
     }
-
-    @objc private func showLanguageSelector() {
-        let languageVC = LanguageSelectionViewController()
-        let navController = UINavigationController(rootViewController: languageVC)
-        present(navController, animated: true)
-    }
-
     
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
     
-    // MARK: - Setup
     private func setupUI() {
-        view.backgroundColor = .systemBackground
+        view.backgroundColor = .appBackground
         updateLocalization()
         
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -62,6 +46,8 @@ class FeedViewController: UIViewController {
         tableView.register(PostTableViewCell.self, forCellReuseIdentifier: "PostCell")
         tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 400
+        tableView.backgroundColor = .appBackground
+        tableView.separatorColor = .appSeparator
     }
     
     private func loadPosts() {
@@ -79,12 +65,10 @@ class FeedViewController: UIViewController {
         tableView.addGestureRecognizer(doubleTapGesture)
     }
     
-    // MARK: - Localization
     @objc private func updateLocalization() {
         title = "feed_title".localized
     }
     
-    // MARK: - Actions
     @objc private func handleDoubleTap(_ gesture: UITapGestureRecognizer) {
         let location = gesture.location(in: tableView)
         guard let indexPath = tableView.indexPathForRow(at: location) else { return }
@@ -114,7 +98,6 @@ class FeedViewController: UIViewController {
     }
 }
 
-// MARK: - UITableViewDelegate, UITableViewDataSource
 extension FeedViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return posts.count
